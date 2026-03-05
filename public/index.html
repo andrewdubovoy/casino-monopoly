@@ -1,0 +1,61 @@
+﻿<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Батл Монополия</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="particles" aria-hidden="true">
+      <span class="particle"></span>
+      <span class="particle"></span>
+      <span class="particle"></span>
+      <span class="particle"></span>
+      <span class="particle"></span>
+      <span class="particle"></span>
+      <span class="particle"></span>
+      <span class="particle"></span>
+      <span class="particle"></span>
+      <span class="particle"></span>
+      <span class="particle"></span>
+      <span class="particle"></span>
+    </div>
+
+    <div id="screen1" class="screen active">
+      <div class="s1-inner">
+
+        <!-- LEFT PLAYER -->
+        <div class="player-card anim-left">
+          <div class="avatar-frame">
+            <img class="avatar" src="/images/left-avatar.png" alt="left avatar" />
+          </div>
+          <div class="player-name">MALOYCSER</div>
+        </div>
+
+        <!-- CENTER -->
+        <div class="center center-block">
+          <div class="bg-glow" aria-hidden="true"></div>
+          <div class="vs-label">VS</div>
+          <h1 class="title">БАТЛ<br/>МОНОПОЛИЯ</h1>
+          <div class="tag">С DRAGON MONEY</div>
+          <div class="subtitle">КТО СТАНЕТ БОГАТЕЙШИМ?</div>
+          <button id="play" class="play-btn">🎲 ИГРАТЬ!</button>
+        </div>
+
+        <!-- RIGHT PLAYER -->
+        <div class="player-card anim-right">
+          <div class="avatar-frame">
+            <span class="boss-badge">👑 БОСС</span>
+            <img class="avatar" src="/images/right-avatar.png" alt="right avatar" />
+          </div>
+          <div class="player-name">DRAGON MONEY</div>
+        </div>
+
+      </div>
+    </div>
+
+    <script src="/app.js"></script>
+  </body>
+</html> 
