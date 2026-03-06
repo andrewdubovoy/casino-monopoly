@@ -73,6 +73,170 @@
       </div>
     </div>
 
+    <!-- ЭКРАН 3: ИГРОВОЕ ПОЛЕ -->
+    <div id="screen3" class="screen">
+
+      <!-- Top header -->
+      <div class="board-header" id="boardHeader" style="display:none">
+        <span class="board-header-icon">🎲</span>
+        <span class="board-header-title">Батл Монополия × Dragon Money</span>
+      </div>
+
+      <div class="s3-inner">
+
+        <!-- LEFT PLAYER PANEL (fixed top-right) -->
+        <div class="player-panel left-panel">
+          <div class="pp-avatar-wrap">
+            <img class="pp-avatar" src="/images/left-avatar.png" alt="maloycser" />
+          </div>
+          <div class="pp-name">MALOYCSER</div>
+          <div class="pp-money-label">ДЕНЬГИ</div>
+          <div class="pp-money"><span id="playerMoney">1 500</span> <span class="pp-ruble">₽</span></div>
+          <div class="pp-hearts">❤️❤️❤️</div>
+        </div>
+
+        <div class="board-wrap">
+
+          <!-- ═══ BOARD GRID ═══ -->
+          <div class="board">
+
+            <!-- ROW 1: top corners + top cells -->
+            <!-- col1: БАНЯ (corner top-left) -->
+            <div class="cell corner" style="grid-column:1;grid-row:1" data-col="1" data-row="1">
+              <div class="p-icon">P</div>
+              <div class="corner-label">БАНЯ</div>
+            </div>
+            <!-- top row cells col2-10 (bottom strip) -->
+            <div class="cell bottom" style="grid-column:2;grid-row:1" data-col="2" data-row="1"><div class="strip red"></div><div class="cell-icon">🏠</div><div class="cell-name" style="--c:#e63946;color:var(--c)">Колтуши</div></div>
+            <div class="cell bottom" style="grid-column:3;grid-row:1" data-col="3" data-row="1"><div class="strip" style="background:transparent"></div><div class="cell-icon">❓</div><div class="cell-name">Шанс</div></div>
+            <div class="cell bottom" style="grid-column:4;grid-row:1" data-col="4" data-row="1"><div class="strip red"></div><div class="cell-icon">🏠</div><div class="cell-name" style="--c:#e63946;color:var(--c)">Кирюша</div></div>
+            <div class="cell bottom" style="grid-column:5;grid-row:1" data-col="5" data-row="1"><div class="strip red"></div><div class="cell-icon">🏠</div><div class="cell-name" style="--c:#e63946;color:var(--c)">Ильинойс</div></div>
+            <div class="cell bottom" style="grid-column:6;grid-row:1" data-col="6" data-row="1"><div class="strip teal"></div><div class="cell-icon">🎰</div><div class="cell-name" style="--c:#00b4d8;color:var(--c)">Big Bass</div></div>
+            <div class="cell bottom" style="grid-column:7;grid-row:1" data-col="7" data-row="1"><div class="strip yellow"></div><div class="cell-icon">🏠</div><div class="cell-name" style="--c:#f5c842;color:var(--c)">Атлантик</div></div>
+            <div class="cell bottom" style="grid-column:8;grid-row:1" data-col="8" data-row="1"><div class="strip yellow"></div><div class="cell-icon">🏠</div><div class="cell-name" style="--c:#f5c842;color:var(--c)">Вентнор</div></div>
+            <div class="cell bottom" style="grid-column:9;grid-row:1" data-col="9" data-row="1"><div class="strip" style="background:transparent"></div><div class="cell-icon">💧</div><div class="cell-name">Водоканал</div></div>
+            <div class="cell bottom" style="grid-column:10;grid-row:1" data-col="10" data-row="1"><div class="strip yellow"></div><div class="cell-icon">🏠</div><div class="cell-name" style="--c:#f5c842;color:var(--c)">Мэриланд</div></div>
+            <!-- col11: KZ ШТРАФ top-right -->
+            <div class="cell corner" style="grid-column:11;grid-row:1" data-col="11" data-row="1">
+              <div class="kz-label">KZ</div>
+              <div class="corner-label">ШТРАФ</div>
+            </div>
+
+            <!-- ROW 2: left col2, right col10 -->
+            <div class="cell left"  style="grid-column:1;grid-row:2" data-col="1" data-row="2"><div class="strip orange"></div><div class="cell-icon">🏠</div><div class="cell-name" style="--c:#f4a261;color:var(--c)">Нью-Йорк</div></div>
+            <div class="cell right" style="grid-column:11;grid-row:2" data-col="11" data-row="2"><div class="strip green"></div><div class="cell-icon">🏠</div><div class="cell-name" style="--c:#2dc653;color:var(--c)">Пасифик</div></div>
+
+            <!-- ROW 3 -->
+            <div class="cell left"  style="grid-column:1;grid-row:3" data-col="1" data-row="3"><div class="strip orange"></div><div class="cell-icon">🏠</div><div class="cell-name" style="--c:#f4a261;color:var(--c)">Теннесси</div></div>
+            <div class="cell right" style="grid-column:11;grid-row:3" data-col="11" data-row="3"><div class="strip green"></div><div class="cell-icon">🏠</div><div class="cell-name" style="--c:#2dc653;color:var(--c)">Сев.Каролина</div></div>
+
+            <!-- ROW 4 -->
+            <div class="cell left"  style="grid-column:1;grid-row:4" data-col="1" data-row="4"><div class="strip" style="background:transparent"></div><div class="cell-icon">💰</div><div class="cell-name">Всеобщий нажид</div></div>
+            <div class="cell right" style="grid-column:11;grid-row:4" data-col="11" data-row="4"><div class="strip" style="background:transparent"></div><div class="cell-icon">🎰</div><div class="cell-name">Поки-нвазия</div></div>
+
+            <!-- ROW 5 -->
+            <div class="cell left"  style="grid-column:1;grid-row:5" data-col="1" data-row="5"><div class="strip orange"></div><div class="cell-icon">🏠</div><div class="cell-name" style="--c:#f4a261;color:var(--c)">Сент-Джеймс</div></div>
+            <div class="cell right" style="grid-column:11;grid-row:5" data-col="11" data-row="5"><div class="strip teal"></div><div class="cell-icon">🎰</div><div class="cell-name" style="--c:#00b4d8;color:var(--c)">Big Bass</div></div>
+
+            <!-- ROW 6 -->
+            <div class="cell left"  style="grid-column:1;grid-row:6" data-col="1" data-row="6"><div class="strip teal"></div><div class="cell-icon">🎰</div><div class="cell-name" style="--c:#00b4d8;color:var(--c)">Big Bass</div></div>
+            <div class="cell right" style="grid-column:11;grid-row:6" data-col="11" data-row="6"><div class="strip" style="background:transparent"></div><div class="cell-icon">❓</div><div class="cell-name">Шанс</div></div>
+
+            <!-- ROW 7 -->
+            <div class="cell left"  style="grid-column:1;grid-row:7" data-col="1" data-row="7"><div class="strip pink"></div><div class="cell-icon">🏠</div><div class="cell-name" style="--c:#e91e8c;color:var(--c)">Вирджиния</div></div>
+            <div class="cell right" style="grid-column:11;grid-row:7" data-col="11" data-row="7"><div class="strip blue"></div><div class="cell-icon">🏠</div><div class="cell-name" style="--c:#4361ee;color:var(--c)">Парк Плейс</div></div>
+
+            <!-- ROW 8 -->
+            <div class="cell left"  style="grid-column:1;grid-row:8" data-col="1" data-row="8"><div class="strip pink"></div><div class="cell-icon">🏠</div><div class="cell-name" style="--c:#e91e8c;color:var(--c)">Стэйтс</div></div>
+            <div class="cell right" style="grid-column:11;grid-row:8" data-col="11" data-row="8"><div class="strip" style="background:transparent"></div><div class="cell-icon">💎</div><div class="cell-name">Налог Роскошь</div></div>
+
+            <!-- ROW 9 -->
+            <div class="cell left"  style="grid-column:1;grid-row:9" data-col="1" data-row="9"><div class="strip" style="background:transparent"></div><div class="cell-icon">⚡</div><div class="cell-name">Электро</div></div>
+            <div class="cell right" style="grid-column:11;grid-row:9" data-col="11" data-row="9"><div class="strip blue"></div><div class="cell-icon">🏠</div><div class="cell-name" style="--c:#4361ee;color:var(--c)">Бродвей</div></div>
+
+            <!-- ROW 10 -->
+            <div class="cell left"  style="grid-column:1;grid-row:10" data-col="1" data-row="10"><div class="strip pink"></div><div class="cell-icon">🏠</div><div class="cell-name" style="--c:#e91e8c;color:var(--c)">Сент-Чарлз</div></div>
+            <div class="cell right" style="grid-column:11;grid-row:10" data-col="11" data-row="10"><div class="strip" style="background:transparent"></div><div class="cell-icon">💰</div><div class="cell-name">Всеобщий нажид</div></div>
+
+            <!-- ROW 11: bottom row -->
+            <!-- col1: KZ ШТРАФ bottom-left -->
+            <div class="cell corner" style="grid-column:1;grid-row:11" data-col="1" data-row="11">
+              <div class="kz-label">KZ</div>
+              <div class="corner-label">ШТРАФ</div>
+            </div>
+            <!-- bottom cells col2-10 (top strip) -->
+            <div class="cell top" style="grid-column:2;grid-row:11" data-col="2" data-row="11"><div class="strip purple"></div><div class="cell-icon">🎰</div><div class="cell-name" style="--c:#a78bfa;color:var(--c)">Dragon Money Treasures</div></div>
+            <div class="cell top" style="grid-column:3;grid-row:11" data-col="3" data-row="11"><div class="strip purple"></div><div class="cell-icon">⭐</div><div class="cell-name" style="--c:#a78bfa;color:var(--c)">Starlight Princess 1000</div></div>
+            <div class="cell top" style="grid-column:4;grid-row:11" data-col="4" data-row="11"><div class="strip" style="background:transparent"></div><div class="cell-icon">❓</div><div class="cell-name">Шанс</div></div>
+            <div class="cell top" style="grid-column:5;grid-row:11" data-col="5" data-row="11"><div class="strip purple"></div><div class="cell-icon">🏛️</div><div class="cell-name" style="--c:#a78bfa;color:var(--c)">Gates of Olympus 1000</div></div>
+            <div class="cell top" style="grid-column:6;grid-row:11" data-col="6" data-row="11"><div class="strip teal"></div><div class="cell-icon">🎰</div><div class="cell-name" style="--c:#00b4d8;color:var(--c)">Big Bass</div></div>
+            <div class="cell top" style="grid-column:7;grid-row:11" data-col="7" data-row="11"><div class="strip" style="background:transparent"></div><div class="cell-icon">📈</div><div class="cell-name">Налог с дохода</div></div>
+            <div class="cell top" style="grid-column:8;grid-row:11" data-col="8" data-row="11"><div class="strip teal"></div><div class="cell-icon">🍬</div><div class="cell-name" style="--c:#00b4d8;color:var(--c)">Sweet Bonanza 1000</div></div>
+            <div class="cell top" style="grid-column:9;grid-row:11" data-col="9" data-row="11"><div class="strip" style="background:transparent"></div><div class="cell-icon">💰</div><div class="cell-name">Всеобщий нажид</div></div>
+            <div class="cell top" style="grid-column:10;grid-row:11" data-col="10" data-row="11"><div class="strip teal"></div><div class="cell-icon">🍭</div><div class="cell-name" style="--c:#00b4d8;color:var(--c)">Sugar Rush 1000</div></div>
+            <!-- col11: СТАРТ corner bottom-right -->
+            <div class="cell corner" style="grid-column:11;grid-row:11" data-col="11" data-row="11">
+              <div class="play-icon">▶️</div>
+              <div class="corner-label">СТАРТ</div>
+            </div>
+
+          </div>
+          <!-- /board -->
+
+          <!-- ═══ TOKEN ═══ -->
+          <div class="token" id="playerToken"><div class="token-inner"></div></div>
+
+          <!-- ═══ CENTER PANEL ═══ -->
+          <div class="board-center">
+            <div class="bc-title">БАТЛ<br/>МОНОПОЛИЯ</div>
+            <div class="bc-sub">× DRAGON MONEY</div>
+            <div class="dice-row">
+              <div class="die" id="die1">
+                <div class="dot hidden"></div><div class="dot hidden"></div><div class="dot hidden"></div>
+                <div class="dot hidden"></div><div class="dot"></div><div class="dot hidden"></div>
+                <div class="dot hidden"></div><div class="dot hidden"></div><div class="dot hidden"></div>
+              </div>
+              <div class="die" id="die2">
+                <div class="dot hidden"></div><div class="dot hidden"></div><div class="dot hidden"></div>
+                <div class="dot hidden"></div><div class="dot"></div><div class="dot hidden"></div>
+                <div class="dot hidden"></div><div class="dot hidden"></div><div class="dot hidden"></div>
+              </div>
+            </div>
+            <div class="score-row">
+              <div class="score-dash"></div>
+              <div class="score-val" id="scoreVal"></div>
+              <div class="score-dash"></div>
+            </div>
+            <button class="roll-btn" onclick="rollDice()">🎲 БРОСИТЬ КУБИКИ</button>
+          </div>
+
+
+        </div>
+        <!-- /board-wrap -->
+
+        <!-- RIGHT PLAYER PANEL -->
+        <div class="player-panel right-panel">
+          <div class="pp-avatar-wrap">
+            <span class="pp-boss-badge">⚡ БОСС</span>
+            <img class="pp-avatar" src="/images/right-avatar.png" alt="dragon money" />
+          </div>
+          <div class="pp-name">DRAGON MONEY</div>
+          <div class="pp-money-label">ДЕНЬГИ</div>
+          <div class="pp-money pp-infinity">∞ <span class="pp-ruble">₽</span></div>
+        </div>
+      </div>
+    </div>
+    <!-- /screen3 -->
+
+
+    <!-- BOSS BAR -->
+    <div class="boss-bar" id="bossBar">
+      <div class="boss-bar-label">БОСС — Dragon Money</div>
+      <div class="boss-bar-track">
+        <div class="boss-bar-fill" id="bossBarFill"></div>
+      </div>
+      <div class="boss-bar-values"><span id="bossHp">500000</span> / 500000</div>
+    </div>
     <script src="/app.js"></script>
   </body>
 </html>
