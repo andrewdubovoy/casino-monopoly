@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Батл Монополия</title>
-    <script src="/scale.js"></script>
+    <script src="/Scale.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/styles.css" />
   </head>
@@ -33,7 +33,7 @@
           <div class="vs-label">VS</div>
           <h1 class="title">БАТЛ<br/>МОНОПОЛИЯ</h1>
           <div class="tag">С DRAGON MONEY</div>
-          <div class="subtitle">КТО СТАНЕТ БОГАТЕЙШИМ?</div>
+          <div class="subtitle">КТО ПОБЕДИТ?</div>
           <button id="play" class="play-btn" onclick="transitionTo(2)">🎲 ИГРАТЬ!</button>
         </div>
 
@@ -94,16 +94,40 @@
           <div class="pp-money-label">ДЕНЬГИ</div>
           <div class="pp-money"><span id="playerMoney">1 500</span> <span class="pp-ruble">₽</span></div>
           <div class="pp-hearts"><span class="pp-heart" id="heart1">❤️</span><span class="pp-heart" id="heart2">❤️</span><span class="pp-heart" id="heart3">❤️</span></div>
+          <!-- Leaderboard widget sits directly under hearts -->
+          <div class="lb-widget" id="leaderboardWidget" style="display:none">
+            <div class="lb-header">
+              <span class="lb-header-icon">📊</span>
+              <span class="lb-header-title">ВИДЖЕТ БОНУСОК</span>
+              <span class="lb-avg-badge" id="lbAvgBadge" style="display:none">—</span>
+            </div>
+            <div class="lb-section lb-section-best">
+              <div class="lb-section-label">🏆 ЛУЧШЕЕ</div>
+              <div id="lbBest"></div>
+            </div>
+            <div class="lb-section lb-section-worst">
+              <div class="lb-section-label">💀 ХУДШЕЕ</div>
+              <div id="lbWorst"><div class="lb-empty">Нужно больше заданий…</div></div>
+            </div>
+            <div class="lb-divider"></div>
+            <div class="lb-section-label lb-all-label">📋 ВСЕ ЗАДАНИЯ</div>
+            <div class="lb-all-scroll">
+              <div id="lbAll"></div>
+            </div>
+          </div>
         </div>
 
         <div class="board-col">
         <!-- ═══ СЧЁТЧИК ХОДОВ ═══ -->
-        <div class="move-counter" id="moveCounter">
-          <span class="mc-label">ХОД</span>
-          <span class="mc-value" id="moveCount">0</span>
-          <span class="mc-sep">·</span>
-          <span class="mc-label">КРУГ</span>
-          <span class="mc-lap" id="moveCircle">1</span>
+        <div class="mc-streak-wrap">
+          <div class="streak-widget" id="streakWidget" style="display:none"></div>
+          <div class="move-counter" id="moveCounter">
+            <span class="mc-label">ХОД</span>
+            <span class="mc-value" id="moveCount">0</span>
+            <span class="mc-sep">·</span>
+            <span class="mc-label">КРУГ</span>
+            <span class="mc-lap" id="moveCircle">1</span>
+          </div>
         </div>
 
         <div class="board-wrap">
@@ -112,7 +136,7 @@
           <div class="board">
 
             <!-- ROW 1: top -->
-            <div class="cell corner corner-banya" style="grid-column:1;grid-row:1" data-col="1" data-row="1">
+            <div class="cell corner corner-banya corner-tl" style="grid-column:1;grid-row:1" data-col="1" data-row="1">
               <div class="p-icon">P</div>
               <div class="corner-label">БАНЯ</div>
             </div>
@@ -120,12 +144,12 @@
             <div class="cell bottom chance-cell" style="grid-column:3;grid-row:1" data-col="3" data-row="1"><div class="strip chance-strip"></div><div class="cell-icon chance-cell-icon">❓</div><div class="cell-name chance-cell-name">Шанс</div></div>
             <div class="cell bottom" style="grid-column:4;grid-row:1" data-col="4" data-row="1"><div class="strip red"></div><div class="cell-icon">🏠</div><div class="cell-name" style="--c:#e63946;color:var(--c)">Кирюша</div></div>
             <div class="cell bottom" style="grid-column:5;grid-row:1" data-col="5" data-row="1"><div class="strip red"></div><div class="cell-icon">🏠</div><div class="cell-name" style="--c:#e63946;color:var(--c)">Ильинойс</div></div>
-            <div class="cell bottom" style="grid-column:6;grid-row:1" data-col="6" data-row="1"><div class="strip teal"></div><div class="cell-icon">🎰</div><div class="cell-name" style="--c:#00b4d8;color:var(--c)">Big Bass</div></div>
+            <div class="cell bottom bigbass-cell" style="grid-column:6;grid-row:1" data-col="6" data-row="1"><div class="strip teal"></div><div class="cell-icon">🎰</div><div class="cell-name" style="--c:#00b4d8;color:var(--c)">Big Bass</div></div>
             <div class="cell bottom" style="grid-column:7;grid-row:1" data-col="7" data-row="1"><div class="strip yellow"></div><div class="cell-icon">🏠</div><div class="cell-name" style="--c:#f5c842;color:var(--c)">Атлантик</div></div>
             <div class="cell bottom" style="grid-column:8;grid-row:1" data-col="8" data-row="1"><div class="strip yellow"></div><div class="cell-icon">🏠</div><div class="cell-name" style="--c:#f5c842;color:var(--c)">Вентнор</div></div>
             <div class="cell bottom mhr-cell" style="grid-column:9;grid-row:1" data-col="9" data-row="1"><div class="strip danger"></div><div class="cell-icon mhr-cell-icon">💀</div><div class="cell-name mhr-cell-name">МЕГА ХАЙ РОЛЛ</div></div>
             <div class="cell bottom" style="grid-column:10;grid-row:1" data-col="10" data-row="1"><div class="strip yellow"></div><div class="cell-icon">🏠</div><div class="cell-name" style="--c:#f5c842;color:var(--c)">Мэриланд</div></div>
-            <div class="cell corner corner-shtraf" style="grid-column:11;grid-row:1" data-col="11" data-row="1">
+            <div class="cell corner corner-shtraf corner-tr" style="grid-column:11;grid-row:1" data-col="11" data-row="1">
               <div class="kz-label">⛔</div>
               <div class="corner-label">ШТРАФ</div>
             </div>
@@ -144,11 +168,11 @@
 
             <!-- ROW 5 -->
             <div class="cell left"  style="grid-column:1;grid-row:5" data-col="1" data-row="5"><div class="strip orange"></div><div class="cell-icon">🏠</div><div class="cell-name" style="--c:#f4a261;color:var(--c)">Сент-Джеймс</div></div>
-            <div class="cell right" style="grid-column:11;grid-row:5" data-col="11" data-row="5"><div class="strip teal"></div><div class="cell-icon">🎰</div><div class="cell-name" style="--c:#00b4d8;color:var(--c)">Big Bass</div></div>
+            <div class="cell right bigbass-cell" style="grid-column:11;grid-row:6" data-col="11" data-row="6"><div class="strip teal"></div><div class="cell-icon">🎰</div><div class="cell-name" style="--c:#00b4d8;color:var(--c)">Big Bass</div></div>
 
             <!-- ROW 6 -->
-            <div class="cell left"  style="grid-column:1;grid-row:6" data-col="1" data-row="6"><div class="strip teal"></div><div class="cell-icon">🎰</div><div class="cell-name" style="--c:#00b4d8;color:var(--c)">Big Bass</div></div>
-            <div class="cell right chance-cell" style="grid-column:11;grid-row:6" data-col="11" data-row="6"><div class="strip chance-strip"></div><div class="cell-icon chance-cell-icon">❓</div><div class="cell-name chance-cell-name">Шанс</div></div>
+            <div class="cell left bigbass-cell"  style="grid-column:1;grid-row:6" data-col="1" data-row="6"><div class="strip teal"></div><div class="cell-icon">🎰</div><div class="cell-name" style="--c:#00b4d8;color:var(--c)">Big Bass</div></div>
+            <div class="cell right chance-cell" style="grid-column:11;grid-row:5" data-col="11" data-row="5"><div class="strip chance-strip"></div><div class="cell-icon chance-cell-icon">❓</div><div class="cell-name chance-cell-name">Шанс</div></div>
 
             <!-- ROW 7 -->
             <div class="cell left"  style="grid-column:1;grid-row:7" data-col="1" data-row="7"><div class="strip pink"></div><div class="cell-icon">🏠</div><div class="cell-name" style="--c:#e91e8c;color:var(--c)">Вирджиния</div></div>
@@ -167,7 +191,7 @@
             <div class="cell right sabam-cell" style="grid-column:11;grid-row:10" data-col="11" data-row="10"><div class="strip sabam"></div><div class="cell-icon sabam-icon">🎁</div><div class="cell-name sabam-name">Розыгрыш Сабам</div></div>
 
             <!-- ROW 11: bottom -->
-            <div class="cell corner corner-shtraf" style="grid-column:1;grid-row:11" data-col="1" data-row="11">
+            <div class="cell corner corner-shtraf corner-bl" style="grid-column:1;grid-row:11" data-col="1" data-row="11">
               <div class="kz-label">⛔</div>
               <div class="corner-label">ШТРАФ</div>
             </div>
@@ -175,12 +199,12 @@
             <div class="cell top" style="grid-column:3;grid-row:11" data-col="3" data-row="11"><div class="strip purple"></div><div class="cell-icon">⭐</div><div class="cell-name" style="--c:#a78bfa;color:var(--c)">Starlight Princess 1000</div></div>
             <div class="cell top chance-cell" style="grid-column:4;grid-row:11" data-col="4" data-row="11"><div class="strip chance-strip"></div><div class="cell-icon chance-cell-icon">❓</div><div class="cell-name chance-cell-name">Шанс</div></div>
             <div class="cell top" style="grid-column:5;grid-row:11" data-col="5" data-row="11"><div class="strip purple"></div><div class="cell-icon">🏛️</div><div class="cell-name" style="--c:#a78bfa;color:var(--c)">Gates of Olympus 1000</div></div>
-            <div class="cell top" style="grid-column:6;grid-row:11" data-col="6" data-row="11"><div class="strip teal"></div><div class="cell-icon">🎰</div><div class="cell-name" style="--c:#00b4d8;color:var(--c)">Big Bass</div></div>
+            <div class="cell top bigbass-cell" style="grid-column:6;grid-row:11" data-col="6" data-row="11"><div class="strip teal"></div><div class="cell-icon">🎰</div><div class="cell-name" style="--c:#00b4d8;color:var(--c)">Big Bass</div></div>
             <div class="cell top mhr-cell" style="grid-column:7;grid-row:11" data-col="7" data-row="11"><div class="strip danger"></div><div class="cell-icon mhr-cell-icon">💀</div><div class="cell-name mhr-cell-name">МЕГА ХАЙ РОЛЛ</div></div>
             <div class="cell top" style="grid-column:8;grid-row:11" data-col="8" data-row="11"><div class="strip teal"></div><div class="cell-icon">🍬</div><div class="cell-name" style="--c:#00b4d8;color:var(--c)">Sweet Bonanza 1000</div></div>
             <div class="cell top sabam-cell" style="grid-column:9;grid-row:11" data-col="9" data-row="11"><div class="strip sabam"></div><div class="cell-icon sabam-icon">🎁</div><div class="cell-name sabam-name">Розыгрыш Сабам</div></div>
             <div class="cell top" style="grid-column:10;grid-row:11" data-col="10" data-row="11"><div class="strip teal"></div><div class="cell-icon">🍭</div><div class="cell-name" style="--c:#00b4d8;color:var(--c)">Sugar Rush 1000</div></div>
-            <div class="cell corner corner-start" style="grid-column:11;grid-row:11" data-col="11" data-row="11">
+            <div class="cell corner corner-start corner-br" style="grid-column:11;grid-row:11" data-col="11" data-row="11">
               <div class="play-icon">▶️</div>
               <div class="corner-label">СТАРТ</div>
             </div>
@@ -189,7 +213,7 @@
           <!-- /board -->
 
           <!-- TOKEN -->
-          <div class="token" id="playerToken"><div class="token-inner"></div></div>
+          <div class="token" id="playerToken"><div class="token-mascot" id="tokenMascot">😎</div></div>
 
           <!-- CENTER PANEL -->
           <div class="board-center">
@@ -239,27 +263,53 @@
 
     <!-- ═══ BIG BASS WHEEL MODAL ═══ -->
     <div class="wheel-overlay" id="wheelOverlay" style="display:none">
+      <!-- Декоративные fish-пузырьки -->
+      <div class="wm-bubbles" aria-hidden="true">
+        <span class="wm-bubble"></span><span class="wm-bubble"></span>
+        <span class="wm-bubble"></span><span class="wm-bubble"></span>
+        <span class="wm-bubble"></span>
+      </div>
       <div class="wheel-modal">
-        <div class="wm-header">
-          <div class="wm-icon">🎣</div>
-          <div class="wm-title">BIG BASS</div>
-          <div class="wm-sub">Где мы будем сегодня рыбачить?</div>
-        </div>
-        <div class="wheel-wrap">
-          <div class="wheel-pointer">▼</div>
-          <div class="wheel-container">
-            <canvas id="wheelCanvas" width="420" height="420"></canvas>
+        <!-- Teal header strip -->
+        <div class="wm-top-strip"></div>
+
+        <!-- ЭКРАН 1: Колесо -->
+        <div class="wm-screen" id="wmScreen1">
+          <div class="wm-header">
+            <div class="wm-icon">🎣</div>
+            <div class="wm-title">BIG BASS</div>
+            <div class="wm-sub">Где мы будем сегодня рыбачить?</div>
           </div>
+          <div class="wheel-wrap">
+            <div class="wheel-pointer">▼</div>
+            <div class="wheel-container">
+              <canvas id="wheelCanvas" width="420" height="420"></canvas>
+            </div>
+          </div>
+          <div class="wm-actions">
+            <button class="wm-btn wm-spin" id="wheelSpinBtn" onclick="spinWheel()">🎰 КРУТИТЬ</button>
+          </div>
+          <button class="wm-btn wm-decline" onclick="wheelDecline()">✖ Отказаться</button>
         </div>
-        <div class="wheel-result" id="wheelResult" style="display:none">
-          <div class="wr-label">ВЫПАЛО</div>
-          <div class="wr-val" id="wheelResultText">—</div>
+
+        <!-- ЭКРАН 2: Результат + переход -->
+        <div class="wm-screen" id="wmScreen2" style="display:none">
+          <div class="wm-header">
+            <div class="wm-icon wm-icon-fish">🐟</div>
+            <div class="wm-title">КЛЮЁТ!</div>
+            <div class="wm-sub">Сегодня рыбачим здесь</div>
+          </div>
+          <div class="wm-result-card" id="wmResultCard">
+            <div class="wr-label">СЛОТ</div>
+            <div class="wr-val" id="wheelResultText">—</div>
+          </div>
+          <div class="wm-actions">
+            <button class="wm-btn wm-go" style="width:100%" onclick="wheelProceed()">🎣 К ЗАДАНИЮ</button>
+          </div>
+          <button class="wm-btn wm-decline" onclick="wheelDecline()">✖ Отказаться</button>
         </div>
-        <div class="wm-buttons">
-          <button class="wm-btn wm-spin" id="wheelSpinBtn" onclick="spinWheel()">🎰 КРУТИТЬ</button>
-          <button class="wm-btn wm-go" id="wheelGoBtn" style="display:none" onclick="wheelProceed()">✔ К ЗАДАНИЮ</button>
-        </div>
-        <button class="wm-btn wm-decline" onclick="wheelDecline()">✖ Отказаться</button>
+
+
       </div>
     </div>
 
@@ -381,13 +431,10 @@
           <span class="ruble-sign">₽</span>
         </div>
         <div class="cm-buttons" style="margin-top:16px">
-          <button class="cm-btn cm-back" onclick="goBackToStep1()">← Назад</button>
           <button class="cm-btn cm-accept" onclick="submitResult()">✔ Подтвердить</button>
         </div>
       </div>
     </div>
-
-        <script src="/app.js"></script>
 
     <!-- ═══ МЕГА ХАЙ РОЛЛ MODAL ═══ -->
     <div class="vn-overlay" id="vnOverlay" style="display:none">
@@ -421,7 +468,6 @@
                      border:1.5px solid rgba(230,57,70,0.4);border-radius:12px;" />
             <span class="ruble-sign" style="color:#ff3355">₽</span>
           </div>
-          <button class="vn-back-btn" onclick="goBackMhrStep1()">← Назад</button>
           <button class="vn-btn" style="margin-top:18px" onclick="submitMhrResult()">✔ ПОДТВЕРДИТЬ</button>
         </div>
       </div>
@@ -446,52 +492,61 @@
         </div>
         <!-- ШАГ 2: ввод баланса (buy-карты) -->
         <div id="chanceStep2" style="display:none;flex-direction:column;align-items:center;width:100%;padding-bottom:4px">
-          <div class="chance-top-badge">💰 РЕЗУЛЬТАТ ПОКУПКИ</div>
-          <div class="chance-card-icon" style="font-size:44px;margin-top:10px">🏟️</div>
-          <div class="chance-card-title" id="chanceStep2Name" style="margin-top:6px"></div>
+          <div class="chance-s2-icon" id="chanceStep2Icon">🏟️</div>
+          <div class="chance-s2-tag">РЕЗУЛЬТАТ</div>
+          <div class="chance-s2-name" id="chanceStep2Name">КУПИ МИНОТАВРА!</div>
           <div class="chance-divider"></div>
-          <div class="chance-card-body">Введи баланс после задания:<br>
-            <span class="ch-note">Стоимость покупки: <b id="chanceStep2Cost">50к ₽</b></span>
+          <div class="chance-s2-sublabel">БАЛАНС ПОСЛЕ ЗАДАНИЯ</div>
+          <div class="chance-s2-hint">Сколько у тебя денег теперь?</div>
+          <div class="chance-s2-costbadge"><span id="chanceStep2Cost">50к ₽</span></div>
+          <div class="input-wrap" style="width:100%;padding:0 24px;box-sizing:border-box;margin-top:12px">
+            <input id="chanceBalanceInput" class="capital-input chance-s2-input" type="number" placeholder="0" min="0" style="padding-right:44px" />
+            <span class="ruble-sign chance-s2-ruble">₽</span>
           </div>
-          <div class="input-wrap" style="width:100%;padding:0 24px;box-sizing:border-box;margin-top:10px">
-            <input id="chanceBalanceInput" class="capital-input" type="number" placeholder="0" min="0"
-              style="font-size:22px;padding:12px 44px 12px 14px;background:#100500;
-                     border:1.5px solid rgba(244,162,97,0.4);border-radius:12px;" />
-            <span class="ruble-sign" style="color:#fb923c">₽</span>
-          </div>
-          <div style="display:flex;gap:10px;margin-top:14px;padding:0 24px;width:100%;box-sizing:border-box">
-            <button class="cm-back" style="flex:0 0 auto" onclick="goBackChanceStep1()">← Назад</button>
-            <button class="chance-action-btn" style="flex:1;margin-top:0" onclick="submitChanceBuy()">✔ ПОДТВЕРДИТЬ</button>
+          <div style="padding:0 24px;width:100%;box-sizing:border-box;margin-top:14px">
+            <button class="chance-s2-btn" onclick="submitChanceBuy()">✔ ПОДТВЕРДИТЬ</button>
           </div>
         </div>
       </div>
     </div>
 
     <!-- СДАТЬСЯ -->
-    <button class="surrender-btn" id="surrenderBtn" onclick="surrender()" style="display:none">💀 СДАТЬСЯ</button>
+    <button class="surrender-btn" id="surrenderBtn" onclick="showSessionEnd()" style="display:none">🏁 ЗАВЕРШИТЬ</button>
 
-    <!-- LEADERBOARD WIDGET -->
-    <div class="lb-widget" id="leaderboardWidget" style="display:none">
-      <div class="lb-header">
-        <span class="lb-header-icon">📊</span>
-        <span class="lb-header-title">ВИДЖЕТ БОНУСОК</span>
-        <span class="lb-avg-badge" id="lbAvgBadge" style="display:none">—</span>
-      </div>
-      <div class="lb-section lb-section-best">
-        <div class="lb-section-label">🏆 ЛУЧШЕЕ</div>
-        <div id="lbBest"></div>
-      </div>
-      <div class="lb-section lb-section-worst">
-        <div class="lb-section-label">💀 ХУДШЕЕ</div>
-        <div id="lbWorst"><div class="lb-empty">Нужно больше заданий…</div></div>
-      </div>
-      <div class="lb-divider"></div>
-      <div class="lb-section-label lb-all-label">📋 ВСЕ ЗАДАНИЯ</div>
-      <div class="lb-all-scroll">
-        <div id="lbAll"></div>
+    <!-- leaderboard moved into left-panel -->
+
+    <script src="/app.js"></script>
+  
+      <!-- SCREEN 1: Setup -->
+
+    </div>
+
+
+    <!-- ═══ SESSION END OVERLAY ═══ -->
+    <div class="session-overlay" id="sessionOverlay" style="display:none">
+      <div class="session-particles" id="sessionParticles"></div>
+      <div class="session-card" id="sessionCard">
+        <div class="session-top-strip"></div>
+        <div class="session-header">
+          <div class="session-trophy">🏆</div>
+          <div class="session-title">СЕССИЯ ЗАВЕРШЕНА</div>
+          <div class="session-sub" id="sessionSub">Неплохая игра!</div>
+        </div>
+
+        <!-- Stats grid -->
+        <div class="session-stats" id="sessionStats"></div>
+
+        <!-- Podium top-3 -->
+        <div class="session-podium-label">ТОП БОНУСОК</div>
+        <div class="session-podium" id="sessionPodium"></div>
+
+        <!-- Actions -->
+        <div class="session-actions">
+          <button class="session-btn-restart" onclick="location.reload()">🔄 НОВАЯ ИГРА</button>
+          <button class="session-btn-close"   onclick="closeSessionEnd()">✖ Продолжить</button>
+        </div>
       </div>
     </div>
 
-    <script src="/app.js"></script>
-  </body>
+</body>
 </html>

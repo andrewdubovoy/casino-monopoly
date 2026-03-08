@@ -71,23 +71,6 @@ function placeToken(idx, animate) {
   });
 }
 
-function checkLapPass(from, to) {
-  if (to < from) {
-    lapMultiplier++;
-    updateMultiplierWidget();
-    setTimeout(() => showToast('gold', '⚡', 'КРУГ ПРОЙДЕН', 'Круговой мультипликатор x' + lapMultiplier + '!'), 400);
-  }
-}
-
-async function walkToken(from, steps) {
-  for (let i = 1; i <= steps; i++) {
-    const prev = (from + i - 1) % BOARD_CELLS.length;
-    const next = (from + i)     % BOARD_CELLS.length;
-    await new Promise(r => setTimeout(r, 310));
-    placeToken(next, true);
-    checkLapPass(prev, next);
-  }
-}
 
 // ══════════════════════════════════════════════════
 //  DICE ROLL
@@ -121,6 +104,7 @@ async function rollDice() {
 
   btn.disabled = true;
   doubleDiscount = false;
+  sfxDice();
   scoreVal.classList.remove('visible');
 
   const v1 = Math.ceil(Math.random() * 6);
@@ -141,8 +125,8 @@ async function rollDice() {
   await walkTokenWithLapPause(from, total);
 
   const cellName = getCellNameAtIndex(currentCell);
-  if (cellName === 'ШТРАФ') { applyPenalty(); unlockButtons(); return; }
-  if (cellName === 'СТАРТ') { unlockButtons(); return; }
+  if (cellName === 'ШТРАФ') { applyPenalty(); sfxSiren(); mascotScared(); unlockButtons(); return; }
+  if (cellName === 'СТАРТ') { mascotDance(); unlockButtons(); return; }
   if (cellName) setTimeout(() => openModal(cellName), 200);
   else unlockButtons();
 }
@@ -376,7 +360,15 @@ function closeModal(accepted) {
     if (declineBtn) declineBtn.style.display = '';
   }, 320);
 
-  if (!accepted) setTimeout(() => loseHeart(), 200);
+  if (!accepted) {
+    if (doubleDiscount) {
+      doubleDiscount = false;
+      updateMultiplierWidget();
+    }
+    streakBreak();
+    mascotSad();
+    setTimeout(() => loseHeart(), 200);
+  }
   unlockButtons();
 }
 
@@ -393,28 +385,6 @@ function showModalError(msg) {
 }
 
 let _balanceBeforeTask = 0;
-
-function goBackToStep1() {
-  const s1 = document.getElementById('cellModalStep1');
-  const s2 = document.getElementById('cellModalStep2');
-  s2.style.animation = 'cmSlideOut 0.22s ease-in forwards';
-  setTimeout(() => {
-    s2.style.display = 'none'; s2.style.animation = '';
-    s1.style.display = 'flex';
-    s1.style.animation = 'cmSlideIn 0.3s cubic-bezier(.22,1,.36,1) forwards';
-  }, 200);
-}
-
-function goBackMhrStep1() {
-  const s1 = document.getElementById('vnStep1');
-  const s2 = document.getElementById('vnStep2');
-  s2.style.animation = 'cmSlideOut 0.22s ease-in forwards';
-  setTimeout(() => {
-    s2.style.display = 'none'; s2.style.animation = '';
-    s1.style.display = 'flex';
-    s1.style.animation = 'cmSlideIn 0.3s cubic-bezier(.22,1,.36,1) forwards';
-  }, 200);
-}
 
 function goToStep2() {
   const moneyEl = document.getElementById('playerMoney');
@@ -456,10 +426,9 @@ function submitResult() {
   const skipNames = ['Розыгрыш Сабам', 'Шанс', 'МЕГА ХАЙ РОЛЛ', 'Налог Роскошь', 'ШТРАФ', 'БАНЯ', 'Электро'];
   const isSkip = skipNames.some(s => taskName.includes(s));
   if (!isSkip && cost > 0) {
-    // ROI: потратил cost, получил обратно (newBalance - balanceBefore + cost)
-    // Например: было 100к, потратил 10к (стало бы 90к), слот дал 15к → стало 105к
-    // Получил обратно: 105 - 100 + 10 = 15к. ROI = 15к / 10к = 1.5x
-    const returned = newBalance - _balanceBeforeTask + cost;
+    // ROI: чистый профит / ставка
+    // Например: было 100к, потратил 10к, стало 121к → профит +21к → ROI = 21к/10к = 2.1x
+    const returned = newBalance - _balanceBeforeTask;
     const roiCoef  = cost > 0 ? returned / cost : 0;
     taskHistory.push({
       name: taskName,
@@ -475,6 +444,8 @@ function submitResult() {
   clearPenalty();
   doubleDiscount = false;
   updateMultiplierWidget();
+  streakAccept();
+  mascotHappy();
   closeModal(true);
   if (diff > 0) setTimeout(() => dealDamageToBoss(Math.round(diff * 0.1)), 350);
 }
@@ -504,6 +475,7 @@ function gainHeart() {
 }
 
 function loseHeart() {
+  sfxHeartLost();
   if (playerHearts <= 0) return;
   const hearts = document.querySelectorAll('.pp-heart');
   const el = hearts[playerHearts - 1];
@@ -591,7 +563,9 @@ function transitionTo(screenNum) {
       if (db) db.style.display = 'flex';
       const sb = document.getElementById('surrenderBtn');
       if (sb) sb.style.display = 'block';
-      // leaderboard starts hidden, shown after first task
+      // Show leaderboard immediately on screen 3 (empty state shown if no tasks yet)
+      const lb = document.getElementById('leaderboardWidget');
+      if (lb) lb.style.display = 'flex';
       updateLeaderboard();
       const snap = (n = 0) => {
         const tok = document.getElementById('playerToken');
@@ -652,6 +626,11 @@ document.addEventListener('DOMContentLoaded', () => {
 //  DEMO WALK
 // ══════════════════════════════════════════════════
 function unlockButtons() {
+  // Always clear double discount when turn ends — regardless of accept/decline/skip
+  if (doubleDiscount) {
+    doubleDiscount = false;
+    updateMultiplierWidget();
+  }
   const btn     = document.querySelector('.roll-btn');
   const demoBtn = document.getElementById('demoBtnEl');
   if (btn)     btn.disabled     = false;
@@ -672,8 +651,8 @@ async function demoWalk() {
   await walkTokenWithLapPause(from, steps);
 
   const cellName = getCellNameAtIndex(currentCell);
-  if (cellName === 'ШТРАФ') { applyPenalty(); unlockButtons(); return; }
-  if (cellName === 'СТАРТ') { unlockButtons(); return; }
+  if (cellName === 'ШТРАФ') { applyPenalty(); sfxSiren(); mascotScared(); unlockButtons(); return; }
+  if (cellName === 'СТАРТ') { mascotDance(); unlockButtons(); return; }
   if (cellName) setTimeout(() => openModal(cellName), 200);
   else unlockButtons();
 }
@@ -783,12 +762,13 @@ const BIG_BASS_SLOTS = [
   'Big Bass Bonanza 3 Reeler','Big Bass Xmas Xtreme',
 ];
 
+// Teal/blue-family Big Bass palette
 const WHEEL_COLORS = [
-  '#1a3a5c','#0e2a1a','#3a1a0a','#1a1a3a','#2a1a00',
-  '#0a2a2a','#2a0a1a','#1a2a0a','#0a1a2a','#2a1a2a',
-  '#1a0a2a','#0a2a1a','#3a2a0a','#0a0a2a','#2a3a0a',
-  '#1a2a2a','#2a0a0a','#0a1a0a','#2a2a1a','#0a2a0a',
-  '#1a0a0a','#2a1a1a','#0a0a1a',
+  '#003847','#00506a','#00293a','#004d60','#001e2e',
+  '#003554','#00436a','#002745','#005070','#001a30',
+  '#003d5c','#00486a','#002238','#005580','#001525',
+  '#004060','#003050','#002040','#004870','#001830',
+  '#003848','#004458','#002535',
 ];
 
 let wheelAngle    = 0;
@@ -799,25 +779,34 @@ let _wheelCellName = '';
 function openWheelModal(cellName) {
   _wheelCellName = cellName;
   wheelSlot      = null;
+  wheelSpinning  = false;
 
-  const overlay = document.getElementById('wheelOverlay');
+  wmShowScreen(1);
+
   const spinBtn = document.getElementById('wheelSpinBtn');
-  const goBtn   = document.getElementById('wheelGoBtn');
-  const result  = document.getElementById('wheelResult');
+  if (spinBtn) spinBtn.disabled = false;
+  document.querySelectorAll('.wm-decline').forEach(b => b.disabled = false);
 
-  spinBtn.disabled      = false;
-  spinBtn.style.display = 'block';
-  goBtn.style.display   = 'none';
-  result.style.display  = 'none';
-  const declineBtnReset = document.querySelector('.wm-decline');
-  if (declineBtnReset) declineBtnReset.disabled = false;
+  // Clear any error
+  const err = document.getElementById('wheelError');
+  if (err) err.style.display = 'none';
 
   drawWheel(wheelAngle);
 
+  const overlay = document.getElementById('wheelOverlay');
   overlay.style.display = 'flex';
   requestAnimationFrame(() => requestAnimationFrame(() => overlay.classList.add('open')));
 }
 
+// Switch visible screen inside wheel modal
+function wmShowScreen(n) {
+  [1,2,3].forEach(i => {
+    const s = document.getElementById('wmScreen' + i);
+    if (s) s.style.display = (i === n) ? 'flex' : 'none';
+  });
+}
+
+// Back button handler (kept for possible future use)
 function closeWheelModal() {
   const overlay = document.getElementById('wheelOverlay');
   overlay.classList.remove('open');
@@ -847,7 +836,7 @@ function drawWheel(rotation) {
     ctx.fillStyle = WHEEL_COLORS[i % WHEEL_COLORS.length];
     ctx.fill();
 
-    ctx.strokeStyle = 'rgba(245,166,35,0.25)';
+    ctx.strokeStyle = 'rgba(0,180,216,0.35)';
     ctx.lineWidth   = 1.5;
     ctx.stroke();
 
@@ -868,10 +857,10 @@ function drawWheel(rotation) {
 
   ctx.beginPath();
   ctx.arc(cx, cy, 28, 0, 2 * Math.PI);
-  ctx.fillStyle = '#161410';
+  ctx.fillStyle = '#00080f';
   ctx.fill();
-  ctx.strokeStyle = 'rgba(245,166,35,0.5)';
-  ctx.lineWidth   = 2;
+  ctx.strokeStyle = 'rgba(0,180,216,0.9)';
+  ctx.lineWidth   = 2.5;
   ctx.stroke();
 
   ctx.font      = '22px serif';
@@ -950,18 +939,23 @@ function snapWheelToCenter(targetIdx, currentAngle, callback) {
 }
 
 function showWheelResult(slotName) {
-  const result  = document.getElementById('wheelResult');
-  const valEl   = document.getElementById('wheelResultText');
-  const goBtn   = document.getElementById('wheelGoBtn');
-
-  valEl.textContent    = slotName;
-  result.style.display = 'flex';
-  goBtn.style.display  = 'block';
+  const valEl = document.getElementById('wheelResultText');
+  if (valEl) valEl.textContent = slotName;
+  // Animate the result card
+  const card = document.getElementById('wmResultCard');
+  if (card) { card.classList.remove('wr-pop'); void card.offsetWidth; card.classList.add('wr-pop'); }
+  wmShowScreen(2);
 }
 
 function wheelProceed() {
-  closeWheelModal();
-  setTimeout(() => { openModalWithSlot(_wheelCellName, wheelSlot); }, 350);
+  // Teal flash transition effect
+  const flash = document.createElement('div');
+  flash.className = 'wm-proceed-flash';
+  document.body.appendChild(flash);
+  setTimeout(() => flash.remove(), 700);
+
+  setTimeout(() => closeWheelModal(), 80);
+  setTimeout(() => { openModalWithSlot(_wheelCellName, wheelSlot); }, 430);
 }
 
 function wheelDecline() {
@@ -971,7 +965,10 @@ function wheelDecline() {
       err = document.createElement('div');
       err.id = 'wheelError'; err.className = 'cm-error';
       err.style.marginTop = '0';
-      document.querySelector('.wm-decline').before(err);
+      // Insert error before the currently visible decline button
+      const activeDecline = document.querySelector('#wmScreen1 .wm-decline, #wmScreen2 .wm-decline');
+      if (activeDecline) activeDecline.before(err);
+      else document.querySelector('.wm-decline').before(err);
     }
     err.textContent = 'У тебя нет жизней для отказа!';
     err.style.display = 'block';
@@ -1480,16 +1477,28 @@ function surrender() {
 function updateLeaderboard() {
   const widget = document.getElementById('leaderboardWidget');
   if (!widget) return;
-  if (taskHistory.length === 0) { widget.style.display = 'none'; return; }
   widget.style.display = 'flex';
+  if (taskHistory.length === 0) {
+    // show empty state, widget stays visible
+    document.getElementById('lbBest').innerHTML = '<div class="lb-empty">Заданий пока нет…</div>';
+    document.getElementById('lbWorst').innerHTML = '<div class="lb-empty">Заданий пока нет…</div>';
+    document.getElementById('lbAll').innerHTML = '';
+    const avgBadge = document.getElementById('lbAvgBadge');
+    if (avgBadge) avgBadge.style.display = 'none';
+    return;
+  }
 
   // Update header stats badge: total profit | avg x
-  const avgRoi = taskHistory.reduce((s, t) => s + t.roiCoef, 0) / taskHistory.length;
-  const totalProfit = taskHistory.reduce((s, t) => s + (t.returned - t.cost), 0);
+  const totalProfit = taskHistory.reduce((s, t) => s + t.returned, 0);
+  // ROI = currentBalance / startCapital (e.g. 140к / 100к = 1.4x)
+  const startCap  = window._startCapital || 1;
+  const moneyNowEl = document.getElementById('playerMoney');
+  const curBalance = parseInt((moneyNowEl ? moneyNowEl.textContent : '0').replace(/[^\d]/g,'')) || 0;
+  const sessionRoi = startCap > 0 ? curBalance / startCap : 0;
   const avgBadge = document.getElementById('lbAvgBadge');
   if (avgBadge) {
     avgBadge.style.display = 'inline-flex';
-    const roiColor  = avgRoi  >= 1 ? '#2dc653' : '#e63946';
+    const roiColor  = sessionRoi >= 1 ? '#2dc653' : '#e63946';
     const profColor = totalProfit >= 0 ? '#2dc653' : '#e63946';
     function fmtShort(n) {
       const abs = Math.abs(n);
@@ -1502,7 +1511,7 @@ function updateLeaderboard() {
     avgBadge.innerHTML =
       '<span class="lb-avg-total" style="color:' + profColor + '">' + fmtShort(totalProfit) + '₽</span>' +
       '<span class="lb-avg-sep">|</span>' +
-      '<span class="lb-avg-x" style="color:' + roiColor + '">' + avgRoi.toFixed(2) + 'x</span>';
+      '<span class="lb-avg-x" style="color:' + roiColor + '">' + sessionRoi.toFixed(2) + 'x</span>';
   }
 
   const sorted = [...taskHistory].sort((a, b) => b.roiCoef - a.roiCoef);
@@ -1569,15 +1578,6 @@ function bumpMoveCounter(n) {
   setTimeout(() => el.classList.remove('bump'), 350);
 }
 
-function updateMoveCircle() {
-  const el = document.getElementById('moveCircle');
-  if (!el) return;
-  el.textContent = lapMultiplier;
-  el.classList.remove('bump');
-  void el.offsetWidth;
-  el.classList.add('bump');
-  setTimeout(() => el.classList.remove('bump'), 500);
-}
 // ══════════════════════════════════════════════════
 //  МЕГА ХАЙ РОЛЛ
 // ══════════════════════════════════════════════════
@@ -1751,7 +1751,7 @@ function submitMhrResult() {
 
   if (_mhrCurrentTask) {
     const cost     = _mhrCurrentTask.cost;
-    const returned = newBalance - _mhrBalanceBefore + cost;
+    const returned = newBalance - _mhrBalanceBefore;
     const roiCoef  = cost > 0 ? returned / cost : 0;
     taskHistory.push({
       name: _mhrCurrentTask.name, cost, returned, roiCoef,
@@ -1781,7 +1781,7 @@ const CHANCE_CARDS = [
     id: 2, name: 'ЗЕРО НЕ ПРОЙДЁТ', icon: '🎲', color: 'ch-red',
     title: 'НА ТРЕТИЙ СЕКТОР!',
     body: 'Поставь <b>50 000 ₽</b> на третий сектор в любой лайв-рулетке прямо сейчас!',
-    effect: null, btn: '🎲 ПРИНЯЛ!'
+    effect: 'roulette', buyCost: 50000, btn: '🎲 ЛЕТС ГОУ!'
   },
   {
     id: 3, name: 'ВИП КЛУБ', icon: '💎', color: 'ch-purple',
@@ -1815,7 +1815,7 @@ const CHANCE_CARDS = [
   },
   {
     id: 8, name: 'СЛАДКАЯ КОНФЕТКА', icon: '💋', color: 'ch-pink',
-    title: 'О ДА, ДЕТКА!',
+    title: 'О ДА ДЕТКА ТЫ ТАКАЯ СЛАДКАЯ КОНФЕТКА',
     body: 'Поцелуй Настю 💋<br><span class="ch-note">Если Настя недоступна — скипни. Каблук.</span>',
     effect: null, btn: '💋 УЖЕ ЦЕЛУЮ'
   },
@@ -1837,6 +1837,7 @@ let _currentChanceCard = null;
 let _chanceBalanceBefore = 0;
 
 function openChanceModal() {
+  sfxDrumRoll(1.2);
   const idx  = Math.floor(Math.random() * CHANCE_CARDS.length);
   _currentChanceCard = CHANCE_CARDS[idx];
   _renderChanceStep1(_currentChanceCard);
@@ -1907,10 +1908,12 @@ function handleChanceBtnClick() {
     _chanceBalanceBefore = parseInt((moneyEl ? moneyEl.textContent : '0').replace(/[^\d]/g,'')) || 0;
     const step1 = document.getElementById('chanceStep1');
     const step2 = document.getElementById('chanceStep2');
-    const nameEl = document.getElementById('chanceStep2Name');
-    const costEl = document.getElementById('chanceStep2Cost');
-    if (nameEl) nameEl.textContent = card.title;
-    if (costEl) costEl.textContent = (card.buyCost / 1000) + 'к ₽';
+    const nameEl  = document.getElementById('chanceStep2Name');
+    const costEl  = document.getElementById('chanceStep2Cost');
+    const iconEl2 = document.getElementById('chanceStep2Icon');
+    if (nameEl)  nameEl.textContent  = card.title;
+    if (costEl)  costEl.textContent  = (card.buyCost / 1000) + 'к ₽';
+    if (iconEl2) iconEl2.textContent = card.icon;
     const inp = document.getElementById('chanceBalanceInput');
     if (inp) inp.value = '';
     step1.style.animation = 'cmSlideOut 0.22s ease-in forwards';
@@ -1923,7 +1926,65 @@ function handleChanceBtnClick() {
     return;
   }
 
+  if (card && card.effect === 'roulette') {
+    spawnRouletteAnimation(() => {
+      const moneyEl = document.getElementById('playerMoney');
+      _chanceBalanceBefore = parseInt((moneyEl ? moneyEl.textContent : '0').replace(/[^\d]/g,'')) || 0;
+      const step1   = document.getElementById('chanceStep1');
+      const step2   = document.getElementById('chanceStep2');
+      const nameEl  = document.getElementById('chanceStep2Name');
+      const costEl  = document.getElementById('chanceStep2Cost');
+      const iconEl2 = document.getElementById('chanceStep2Icon');
+      if (nameEl)  nameEl.textContent  = card.title;
+      if (costEl)  costEl.textContent  = (card.buyCost / 1000) + 'к ₽';
+      if (iconEl2) iconEl2.textContent = card.icon;
+      const inp = document.getElementById('chanceBalanceInput');
+      if (inp) inp.value = '';
+      step1.style.animation = 'cmSlideOut 0.22s ease-in forwards';
+      setTimeout(() => {
+        step1.style.display = 'none'; step1.style.animation = '';
+        step2.style.display = 'flex';
+        step2.style.animation = 'cmSlideIn 0.3s cubic-bezier(.22,1,.36,1) forwards';
+        if (inp) inp.focus();
+      }, 200);
+    });
+    return;
+  }
+
   closeChanceModal(false);
+}
+
+// ── Roulette ball animation ──────────────────────
+function spawnRouletteAnimation(callback) {
+  const el = document.createElement('div');
+  el.className = 'roulette-anim-overlay';
+  el.innerHTML = `
+    <div class="roul-card">
+      <div class="roul-wheel-wrap">
+        <div class="roul-wheel">
+          <div class="roul-num roul-red">3</div>
+          <div class="roul-num roul-blk">6</div>
+          <div class="roul-num roul-red">9</div>
+          <div class="roul-num roul-blk">12</div>
+          <div class="roul-num roul-red">3</div>
+          <div class="roul-num roul-blk">6</div>
+        </div>
+        <div class="roul-ball"></div>
+      </div>
+      <div class="roul-sector-badge">
+        <span class="roul-s-num">3</span>
+        <span class="roul-s-label">СЕКТОР</span>
+      </div>
+      <div class="roul-title">НА ТРЕТИЙ!</div>
+      <div class="roul-amount">50 000 ₽</div>
+    </div>`;
+  document.body.appendChild(el);
+  requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('open')));
+
+  setTimeout(() => {
+    el.classList.add('closing');
+    setTimeout(() => { el.remove(); callback(); }, 450);
+  }, 2200);
 }
 
 function submitChanceBuy() {
@@ -1945,7 +2006,7 @@ function submitChanceBuy() {
   if (moneyEl) moneyEl.textContent = newBalance.toLocaleString('ru');
 
   if (cost > 0) {
-    const returned = newBalance - _chanceBalanceBefore + cost;
+    const returned = newBalance - _chanceBalanceBefore;
     const roiCoef  = cost > 0 ? returned / cost : 0;
     taskHistory.push({ name: card.title, cost, returned, roiCoef,
       balanceBefore: _chanceBalanceBefore, balanceAfter: newBalance });
@@ -1957,17 +2018,6 @@ function submitChanceBuy() {
   if (diff > 0) setTimeout(() => dealDamageToBoss(Math.round(diff * 0.1)), 300);
 
   closeChanceModal(false);
-}
-
-function goBackChanceStep1() {
-  const step1 = document.getElementById('chanceStep1');
-  const step2 = document.getElementById('chanceStep2');
-  step2.style.animation = 'cmSlideOut 0.22s ease-in forwards';
-  setTimeout(() => {
-    step2.style.display = 'none'; step2.style.animation = '';
-    step1.style.display = 'flex';
-    step1.style.animation = 'cmSlideIn 0.3s cubic-bezier(.22,1,.36,1) forwards';
-  }, 200);
 }
 
 function closeChanceModal(keepButtons) {
@@ -2006,4 +2056,329 @@ function restoreRedHeart() {
     }
   }
   return false;
+}
+
+// ══════════════════════════════════════════════════
+//  MASCOT TOKEN
+// ══════════════════════════════════════════════════
+const MASCOT_IDLE    = '😎';
+const MASCOT_HAPPY   = '🤩';
+const MASCOT_SAD     = '😢';
+const MASCOT_DANCE   = '🕺';
+const MASCOT_FIRE    = '🔥';
+const MASCOT_SCARED  = '😨';
+
+function setMascot(emoji, stateClass, duration) {
+  const m = document.getElementById('tokenMascot');
+  if (!m) return;
+  m.textContent = emoji;
+  m.className = 'token-mascot token-mascot-' + stateClass;
+  if (duration) setTimeout(() => setMascot(MASCOT_IDLE, 'idle', 0), duration);
+}
+
+// Called from various events
+function mascotHappy()  { setMascot(MASCOT_HAPPY,  'happy',  2000); sfxCoin(); }
+function mascotSad()    { setMascot(MASCOT_SAD,    'sad',    2000); }
+function mascotDance()  { setMascot(MASCOT_DANCE,  'dance',  3000); }
+function mascotScared() { setMascot(MASCOT_SCARED, 'scared', 1500); }
+function mascotFire()   { setMascot(MASCOT_FIRE,   'fire',   0); }
+
+// ══════════════════════════════════════════════════
+//  STREAK SYSTEM
+// ══════════════════════════════════════════════════
+let streakCount   = 0;
+let streakActive  = false;
+const STREAK_THRESHOLD = 3;
+
+function streakAccept() {
+  streakCount++;
+  if (streakCount >= STREAK_THRESHOLD) {
+    if (!streakActive) {
+      streakActive = true;
+      sfxStreak();
+      showToast('gold', '🔥', 'СТРИК x' + streakCount + '!', 'Продолжай выполнять задания!');
+    }
+    updateStreakWidget();
+    mascotFire();
+  }
+}
+
+function streakBreak() {
+  if (streakActive || streakCount > 0) {
+    if (streakActive) {
+      // Burn animation before reset
+      const sw = document.getElementById('streakWidget');
+      if (sw) { sw.classList.add('streak-burn'); setTimeout(() => { sw.classList.remove('streak-burn'); }, 600); }
+      showToast('red', '💔', 'СТРИК СГОРЕЛ!', 'Было ' + streakCount + ' заданий подряд');
+    }
+    streakCount  = 0;
+    streakActive = false;
+    updateStreakWidget();
+  }
+}
+
+function updateStreakWidget() {
+  const sw = document.getElementById('streakWidget');
+  if (!sw) return;
+  if (streakCount < 1) { sw.style.display = 'none'; return; }
+  sw.style.display = 'flex';
+  sw.innerHTML = `<span class="streak-fire">🔥</span><span class="streak-num">${streakCount}</span><span class="streak-label">СТРИК</span>`;
+  if (streakActive) sw.classList.add('streak-on');
+  else sw.classList.remove('streak-on');
+}
+
+// ══════════════════════════════════════════════════
+//  WEB AUDIO SFX
+// ══════════════════════════════════════════════════
+let _audioCtx = null;
+function getAudioCtx() {
+  if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return _audioCtx;
+}
+
+function sfxPlay(fn) {
+  try { const ctx = getAudioCtx(); if (ctx.state === 'suspended') ctx.resume().then(fn); else fn(ctx); }
+  catch(e) {}
+}
+
+// Dice roll — fast random clicks
+function sfxDice() {
+  sfxPlay(ctx => {
+    for (let i = 0; i < 8; i++) {
+      const t = ctx.currentTime + i * 0.07;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(120 + Math.random() * 200, t);
+      gain.gain.setValueAtTime(0.08, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
+      osc.start(t); osc.stop(t + 0.06);
+    }
+  });
+}
+
+// Coin profit sound
+function sfxCoin() {
+  sfxPlay(ctx => {
+    [880, 1100, 1320].forEach((freq, i) => {
+      const t = ctx.currentTime + i * 0.1;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, t);
+      osc.frequency.exponentialRampToValueAtTime(freq * 1.5, t + 0.15);
+      gain.gain.setValueAtTime(0.12, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+      osc.start(t); osc.stop(t + 0.25);
+    });
+  });
+}
+
+// Penalty siren
+function sfxSiren() {
+  sfxPlay(ctx => {
+    const osc  = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = 'sawtooth';
+    const t = ctx.currentTime;
+    osc.frequency.setValueAtTime(300, t);
+    osc.frequency.linearRampToValueAtTime(600, t + 0.3);
+    osc.frequency.linearRampToValueAtTime(300, t + 0.6);
+    osc.frequency.linearRampToValueAtTime(600, t + 0.9);
+    gain.gain.setValueAtTime(0.1, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 1.0);
+    osc.start(t); osc.stop(t + 1.0);
+  });
+}
+
+// Chance card drum roll
+function sfxDrumRoll(duration = 1.2) {
+  sfxPlay(ctx => {
+    let t = ctx.currentTime;
+    let interval = 0.18;
+    while (t < ctx.currentTime + duration) {
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(180, t);
+      gain.gain.setValueAtTime(0.07, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + interval * 0.8);
+      osc.start(t); osc.stop(t + interval * 0.8);
+      interval = Math.max(0.04, interval * 0.88);
+      t += interval;
+    }
+    // Final hit
+    const osc2  = ctx.createOscillator();
+    const gain2 = ctx.createGain();
+    osc2.connect(gain2); gain2.connect(ctx.destination);
+    osc2.type = 'square';
+    osc2.frequency.setValueAtTime(220, t);
+    gain2.gain.setValueAtTime(0.15, t);
+    gain2.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+    osc2.start(t); osc2.stop(t + 0.3);
+  });
+}
+
+// Heart lost
+function sfxHeartLost() {
+  sfxPlay(ctx => {
+    const osc  = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = 'sine';
+    const t = ctx.currentTime;
+    osc.frequency.setValueAtTime(440, t);
+    osc.frequency.exponentialRampToValueAtTime(110, t + 0.5);
+    gain.gain.setValueAtTime(0.12, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+    osc.start(t); osc.stop(t + 0.5);
+  });
+}
+
+// Streak pop
+function sfxStreak() {
+  sfxPlay(ctx => {
+    [440, 660, 880, 1100].forEach((f, i) => {
+      const t = ctx.currentTime + i * 0.08;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(f, t);
+      gain.gain.setValueAtTime(0.1, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+      osc.start(t); osc.stop(t + 0.15);
+    });
+  });
+}
+
+// ══════════════════════════════════════════════════
+//  SESSION END SCREEN
+// ══════════════════════════════════════════════════
+function showSessionEnd() {
+  const moneyEl  = document.getElementById('playerMoney');
+  const balance  = parseInt((moneyEl ? moneyEl.textContent : '0').replace(/[^\d]/g,'')) || 0;
+  const start    = window._startCapital || 1500;
+  const profit   = balance - start;
+  const profitSign = profit >= 0 ? '+' : '';
+
+  // Stats
+  const avgRoi = taskHistory.length
+    ? (taskHistory.reduce((s,t) => s+t.roiCoef,0) / taskHistory.length).toFixed(2)
+    : '—';
+  const sorted = [...taskHistory].sort((a,b) => b.roiCoef - a.roiCoef);
+  const best   = sorted[0];
+  const worst  = sorted[sorted.length-1];
+
+  function fmt(n) {
+    const abs = Math.abs(n);
+    if (abs >= 1000000) return (n/1000000).toFixed(1) + 'М';
+    if (abs >= 1000)    return (n/1000).toFixed(0) + 'к';
+    return n.toString();
+  }
+
+  // Sub title
+  const subs = profit > 0
+    ? ['Монстр! 🤑','Красавчик! 💰','Вот это результат! 🚀']
+    : ['Ну бывает... 😅','Следующая сессия лучше! 💪','Нет потерянных денег — нет боли!'];
+  document.getElementById('sessionSub').textContent = subs[Math.floor(Math.random()*subs.length)];
+
+  // Stats grid
+  document.getElementById('sessionStats').innerHTML = `
+    <div class="ss-stat">
+      <div class="ss-icon">🎲</div>
+      <div class="ss-val">${totalMoves}</div>
+      <div class="ss-label">ХОДОВ</div>
+    </div>
+    <div class="ss-stat">
+      <div class="ss-icon">🔄</div>
+      <div class="ss-val">${lapMultiplier}</div>
+      <div class="ss-label">КРУГОВ</div>
+    </div>
+    <div class="ss-stat">
+      <div class="ss-icon">🎰</div>
+      <div class="ss-val">${taskHistory.length}</div>
+      <div class="ss-label">ЗАДАНИЙ</div>
+    </div>
+    <div class="ss-stat">
+      <div class="ss-icon">💸</div>
+      <div class="ss-val">${fmt(totalTasksSpent)}</div>
+      <div class="ss-label">ПОТРАЧЕНО</div>
+    </div>
+    <div class="ss-stat ${profit>=0?'ss-green':'ss-red'}">
+      <div class="ss-icon">${profit>=0?'📈':'📉'}</div>
+      <div class="ss-val">${profitSign}${fmt(profit)}</div>
+      <div class="ss-label">ИТОГ</div>
+    </div>
+    <div class="ss-stat">
+      <div class="ss-icon">📊</div>
+      <div class="ss-val">${avgRoi}x</div>
+      <div class="ss-label">AVG ROI</div>
+    </div>
+  `;
+
+  // Podium top-3
+  const top3 = sorted.slice(0, 3);
+  const podiumOrder = top3.length >= 3 ? [top3[1], top3[0], top3[2]] : top3;
+  const heights = ['160px','200px','130px'];
+  const places  = ['🥈','🥇','🥉'];
+  const delays  = ['0.4s','0.1s','0.7s'];
+
+  document.getElementById('sessionPodium').innerHTML = top3.length === 0
+    ? '<div class="ss-no-tasks">Задания не выполнялись</div>'
+    : podiumOrder.map((t, i) => t ? `
+      <div class="ss-podium-col" style="animation-delay:${delays[i]}">
+        <div class="ss-podium-name">${t.name.length > 18 ? t.name.slice(0,16)+'…' : t.name}</div>
+        <div class="ss-podium-roi" style="color:${t.roiCoef>=1?'#2dc653':'#e63946'}">${t.roiCoef.toFixed(2)}x</div>
+        <div class="ss-podium-bar" style="height:${heights[i]}">
+          <div class="ss-podium-place">${places[i]}</div>
+        </div>
+      </div>` : '<div class="ss-podium-col"></div>'
+    ).join('');
+
+  // Spawn session particles
+  spawnSessionParticles();
+
+  const overlay = document.getElementById('sessionOverlay');
+  overlay.style.display = 'flex';
+  requestAnimationFrame(() => requestAnimationFrame(() => overlay.classList.add('open')));
+
+  // SFX fanfare
+  sfxPlay(ctx => {
+    const notes = [523, 659, 784, 1047];
+    notes.forEach((f, i) => {
+      const t = ctx.currentTime + i * 0.18;
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      osc.connect(g); g.connect(ctx.destination);
+      osc.type = 'sine'; osc.frequency.value = f;
+      g.gain.setValueAtTime(0.12, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+      osc.start(t); osc.stop(t + 0.4);
+    });
+  });
+}
+
+function closeSessionEnd() {
+  const overlay = document.getElementById('sessionOverlay');
+  overlay.classList.remove('open');
+  setTimeout(() => { overlay.style.display = 'none'; }, 400);
+}
+
+function spawnSessionParticles() {
+  const wrap = document.getElementById('sessionParticles');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  const emojis = ['🏆','💰','⭐','🎲','🎰','💎','🔥','✨','🌟','🎯'];
+  for (let i = 0; i < 30; i++) {
+    const p = document.createElement('div');
+    p.className = 'sess-particle';
+    p.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    p.style.cssText = `left:${Math.random()*100}%;animation-duration:${7+Math.random()*8}s;animation-delay:${Math.random()*4}s;font-size:${14+Math.random()*18}px`;
+    wrap.appendChild(p);
+  }
 }
