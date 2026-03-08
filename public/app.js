@@ -429,7 +429,7 @@ function submitResult() {
     // ROI: чистый профит / ставка
     // Например: было 100к, потратил 10к, стало 121к → профит +21к → ROI = 21к/10к = 2.1x
     const returned = newBalance - _balanceBeforeTask;
-    const roiCoef  = cost > 0 ? returned / cost : 0;
+    const roiCoef  = cost > 0 ? (cost + returned) / cost : 0;
     taskHistory.push({
       name: taskName,
       cost: cost,
@@ -563,6 +563,8 @@ function transitionTo(screenNum) {
       if (db) db.style.display = 'flex';
       const sb = document.getElementById('surrenderBtn');
       if (sb) sb.style.display = 'block';
+      const tgb = document.getElementById('tgBanner');
+      if (tgb) tgb.style.display = 'flex';
       // Show leaderboard immediately on screen 3 (empty state shown if no tasks yet)
       const lb = document.getElementById('leaderboardWidget');
       if (lb) lb.style.display = 'flex';
@@ -1003,7 +1005,7 @@ function openModalWithSlot(cellName, slotName) {
   document.getElementById('cmTag').textContent   = 'BIG BASS';
   document.getElementById('cmTitle').textContent = slotName;
   document.getElementById('cmTask').innerHTML    =
-    'Сыграй в <b>' + slotName + '</b>!<br>' + priceHtml;
+    'Купи бонуску в <b>' + slotName + '</b>!<br>' + priceHtml;
 
   const declineBtn = document.querySelector('#cellModalStep1 .cm-decline');
   if (declineBtn) declineBtn.style.display = 'none';
@@ -1211,9 +1213,9 @@ function generateSlotTask(slotName) {
   if (canBuy) {
     return roll < 0.75
       ? 'Купи бонуску в <b>' + slotName + '</b>!'
-      : 'Поспинь <b>' + slotName + '</b>!';
+      : 'Поспинь <b>' + slotName + '</b>!<br><span class="task-hint">кол-во спинов не ограничено</span>';
   }
-  return 'Поспинь <b>' + slotName + '</b>!';
+  return 'Поспинь <b>' + slotName + '</b>!<br><span class="task-hint">кол-во спинов не ограничено</span>';
 }
 
 // ══════════════════════════════════════════════════
@@ -1488,17 +1490,13 @@ function updateLeaderboard() {
     return;
   }
 
-  // Update header stats badge: total profit | avg x
+  // Update header stats badge: total profit | avg roi across tasks
   const totalProfit = taskHistory.reduce((s, t) => s + t.returned, 0);
-  // ROI = currentBalance / startCapital (e.g. 140к / 100к = 1.4x)
-  const startCap  = window._startCapital || 1;
-  const moneyNowEl = document.getElementById('playerMoney');
-  const curBalance = parseInt((moneyNowEl ? moneyNowEl.textContent : '0').replace(/[^\d]/g,'')) || 0;
-  const sessionRoi = startCap > 0 ? curBalance / startCap : 0;
+  const avgRoiVal   = taskHistory.reduce((s, t) => s + t.roiCoef, 0) / taskHistory.length;
   const avgBadge = document.getElementById('lbAvgBadge');
   if (avgBadge) {
     avgBadge.style.display = 'inline-flex';
-    const roiColor  = sessionRoi >= 1 ? '#2dc653' : '#e63946';
+    const roiColor  = avgRoiVal >= 1 ? '#2dc653' : '#e63946';
     const profColor = totalProfit >= 0 ? '#2dc653' : '#e63946';
     function fmtShort(n) {
       const abs = Math.abs(n);
@@ -1511,7 +1509,7 @@ function updateLeaderboard() {
     avgBadge.innerHTML =
       '<span class="lb-avg-total" style="color:' + profColor + '">' + fmtShort(totalProfit) + '₽</span>' +
       '<span class="lb-avg-sep">|</span>' +
-      '<span class="lb-avg-x" style="color:' + roiColor + '">' + sessionRoi.toFixed(2) + 'x</span>';
+      '<span class="lb-avg-x" style="color:' + roiColor + '">' + (avgRoiVal > 0 ? '+' : '') + avgRoiVal.toFixed(2) + 'x</span>';
   }
 
   const sorted = [...taskHistory].sort((a, b) => b.roiCoef - a.roiCoef);
@@ -1525,7 +1523,7 @@ function updateLeaderboard() {
     return n.toString();
   }
   function roiStr(r) {
-    return (r >= 0 ? '' : '') + r.toFixed(2) + 'x';
+    return r.toFixed(2) + 'x';
   }
   function roiColor(r) {
     return r >= 1 ? '#2dc653' : '#e63946';
@@ -1752,7 +1750,7 @@ function submitMhrResult() {
   if (_mhrCurrentTask) {
     const cost     = _mhrCurrentTask.cost;
     const returned = newBalance - _mhrBalanceBefore;
-    const roiCoef  = cost > 0 ? returned / cost : 0;
+    const roiCoef  = cost > 0 ? (cost + returned) / cost : 0;
     taskHistory.push({
       name: _mhrCurrentTask.name, cost, returned, roiCoef,
       balanceBefore: _mhrBalanceBefore, balanceAfter: newBalance,
@@ -2007,7 +2005,7 @@ function submitChanceBuy() {
 
   if (cost > 0) {
     const returned = newBalance - _chanceBalanceBefore;
-    const roiCoef  = cost > 0 ? returned / cost : 0;
+    const roiCoef  = cost > 0 ? (cost + returned) / cost : 0;
     taskHistory.push({ name: card.title, cost, returned, roiCoef,
       balanceBefore: _chanceBalanceBefore, balanceAfter: newBalance });
     totalTasksSpent += cost;
@@ -2137,8 +2135,7 @@ function getAudioCtx() {
 }
 
 function sfxPlay(fn) {
-  try { const ctx = getAudioCtx(); if (ctx.state === 'suspended') ctx.resume().then(fn); else fn(ctx); }
-  catch(e) {}
+  // sfx disabled
 }
 
 // Dice roll — fast random clicks
