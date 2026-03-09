@@ -404,6 +404,7 @@ body {
   padding: 18px 48px 18px 16px;
   outline: none;
   -moz-appearance: textfield;
+  appearance: textfield;
 }
 .capital-input::-webkit-outer-spin-button,
 .capital-input::-webkit-inner-spin-button { -webkit-appearance: none; }
@@ -561,6 +562,7 @@ body {
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 4;
+  line-clamp: 4;
   -webkit-box-orient: vertical;
 }
 .cell-name.colored { color: var(--c, #ccc); }
@@ -1197,19 +1199,22 @@ body {
   position: fixed;
   bottom: 122px;
   right: 232px;
-  width: 200px;
-  min-height: 220px;
-  background: #1a1408;
-  border: 1px solid rgba(245,166,35,0.22);
+  width: 194px;
+  height: 218px;
+  background: rgba(10, 5, 20, 0.92);
+  border: 1.5px solid rgba(131, 56, 236, 0.5);
   border-radius: 16px;
-  padding: 18px 18px 16px;
+  padding: 12px;
   z-index: 200;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 0;
-  box-shadow: 0 4px 30px rgba(0,0,0,0.5), 0 0 24px rgba(245,166,35,0.08);
+  box-shadow: 0 0 30px rgba(131, 56, 236, 0.2), 0 4px 24px rgba(0,0,0,0.8);
+  backdrop-filter: blur(8px);
   justify-content: space-between;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+  animation: tgBannerIn 0.6s cubic-bezier(.22,1.3,.36,1) both;
 }
 .multiplier-widget.bump {
   animation: mwBump 0.35s cubic-bezier(.36,.07,.19,.97);
@@ -1268,7 +1273,7 @@ body {
 .mw-divider {
   width: 100%;
   height: 1px;
-  background: rgba(245,166,35,0.12);
+  background: rgba(131, 56, 236, 0.2);
   margin: 14px 0 10px;
 }
 
@@ -2528,10 +2533,10 @@ body {
   font-weight: 400;
 }
 .lb-avg-total {
-  /* color set by JS */
+  color: inherit; /* color set by JS */
 }
 .lb-avg-x {
-  /* color set by JS */
+  color: inherit; /* color set by JS */
 }
 
 .lb-section {
@@ -3696,9 +3701,6 @@ body {
   font-family: 'Montserrat', sans-serif; font-size: 18px; font-weight: 700;
   color: rgba(230,57,70,0.6); letter-spacing: 2px;
   animation: roulTitleIn 0.4s cubic-bezier(.22,1,.36,1) 1.05s both;
-}
-
-  50%      { transform: rotate(-8deg)  translateY(-8px); opacity: 0.28; }
 }
 
 /* ══════════════════════════════════════════════════
