@@ -287,7 +287,7 @@ function openModal(cellName) {
   if (cellName === 'МЕГА ХАЙ РОЛЛ') { openMhrModal(); return; }
   if (cellName === 'Шанс')           { openChanceModal(); return; }
   if (cellName === 'БАНЯ') {
-    showToast('blue', '🛁', 'ПРИШЛО ВРЕМЯ ОТДОХНУТЬ', 'Расслабься, это заслуженный перерыв!');
+    showToast('blue', '🛁', 'ПРИШЛО ВРЕМЯ ОТДОХНУТЬ', 'Прямо как в Ереване..');
     unlockButtons();
     return;
   }
@@ -1784,11 +1784,11 @@ const CHANCE_CARDS = [
   {
     id: 3, name: 'ВИП КЛУБ', icon: '💎', color: 'ch-purple',
     title: 'ВИП КЛУБ',
-    body: 'Дай Эле Сик Севен VIP-ку.<br><span class="ch-note">Опционально. Никто не принуждает.</span>',
+    body: 'Дай Эле Сик Севен VIP-ку(на один стрим, пусть побалуется)<br><span class="ch-note">Опционально. Никто не принуждает.</span>',
     effect: null, btn: '💎 ОКЕЙ'
   },
   {
-    id: 4, name: 'ЧТО ИДЁТ ПОСЛЕ ШЕСТИ?', icon: '7️⃣', color: 'ch-mystery',
+    id: 4, name: 'ЧТО ИДЁТ ПОСЛЕ ШЕСТИ?', icon: '6️⃣7️⃣', color: 'ch-mystery',
     title: 'ПРАВИЛЬНО — СЕМЬ.',
     body: 'Что идёт после шести?<br>Правильно, СЕМЬ.',
     image: '/images/chance_seven.png', effect: null, btn: '7️⃣ ПОНЯЛ!'
@@ -1820,7 +1820,7 @@ const CHANCE_CARDS = [
   {
     id: 9, name: 'НА РЫБАЛКУ!', icon: '🎣', color: 'ch-teal',
     title: 'НЕМНОГО РЫБАЛКИ',
-    body: 'Крути Колесо Фортуны Big Bass! Удача не ждёт.',
+    body: 'Крути Колесо Фортуны Big Bass! Рыбка сама себя не поймает.',
     effect: 'wheel', btn: '🎣 НА РЫБАЛКУ!'
   },
   {
@@ -1914,18 +1914,15 @@ function handleChanceBtnClick() {
     if (iconEl2) iconEl2.textContent = card.icon;
     const inp = document.getElementById('chanceBalanceInput');
     if (inp) inp.value = '';
-    step1.style.animation = 'cmSlideOut 0.22s ease-in forwards';
-    setTimeout(() => {
-      step1.style.display = 'none'; step1.style.animation = '';
-      step2.style.display = 'flex';
-      step2.style.animation = 'cmSlideIn 0.3s cubic-bezier(.22,1,.36,1) forwards';
-      if (inp) inp.focus();
-    }, 200);
+    step1.style.display = 'none';
+    step2.style.display = 'flex';
+    step2.style.animation = 'cmSlideIn 0.3s cubic-bezier(.22,1,.36,1) forwards';
+    if (inp) inp.focus();
     return;
   }
 
   if (card && card.effect === 'roulette') {
-    spawnRouletteAnimation(() => {
+    (() => {
       const moneyEl = document.getElementById('playerMoney');
       _chanceBalanceBefore = parseInt((moneyEl ? moneyEl.textContent : '0').replace(/[^\d]/g,'')) || 0;
       const step1   = document.getElementById('chanceStep1');
@@ -1938,52 +1935,16 @@ function handleChanceBtnClick() {
       if (iconEl2) iconEl2.textContent = card.icon;
       const inp = document.getElementById('chanceBalanceInput');
       if (inp) inp.value = '';
-      step1.style.animation = 'cmSlideOut 0.22s ease-in forwards';
-      setTimeout(() => {
-        step1.style.display = 'none'; step1.style.animation = '';
-        step2.style.display = 'flex';
-        step2.style.animation = 'cmSlideIn 0.3s cubic-bezier(.22,1,.36,1) forwards';
-        if (inp) inp.focus();
-      }, 200);
-    });
+      step1.style.display = 'none';
+      step2.style.display = 'flex';
+      step2.style.animation = 'cmSlideIn 0.3s cubic-bezier(.22,1,.36,1) forwards';
+      if (inp) inp.focus();
+    })();
     return;
   }
-
-  closeChanceModal(false);
 }
 
 // ── Roulette ball animation ──────────────────────
-function spawnRouletteAnimation(callback) {
-  const el = document.createElement('div');
-  el.className = 'roulette-anim-overlay';
-  el.innerHTML = `
-    <div class="roul-card">
-      <div class="roul-wheel-wrap">
-        <div class="roul-wheel">
-          <div class="roul-num roul-red">3</div>
-          <div class="roul-num roul-blk">6</div>
-          <div class="roul-num roul-red">9</div>
-          <div class="roul-num roul-blk">12</div>
-          <div class="roul-num roul-red">3</div>
-          <div class="roul-num roul-blk">6</div>
-        </div>
-        <div class="roul-ball"></div>
-      </div>
-      <div class="roul-sector-badge">
-        <span class="roul-s-num">3</span>
-        <span class="roul-s-label">СЕКТОР</span>
-      </div>
-      <div class="roul-title">НА ТРЕТИЙ!</div>
-      <div class="roul-amount">50 000 ₽</div>
-    </div>`;
-  document.body.appendChild(el);
-  requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('open')));
-
-  setTimeout(() => {
-    el.classList.add('closing');
-    setTimeout(() => { el.remove(); callback(); }, 450);
-  }, 2200);
-}
 
 function submitChanceBuy() {
   const input = document.getElementById('chanceBalanceInput');

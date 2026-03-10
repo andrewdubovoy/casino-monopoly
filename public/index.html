@@ -499,9 +499,9 @@
           <div class="chance-s2-sublabel">БАЛАНС ПОСЛЕ ЗАДАНИЯ</div>
           <div class="chance-s2-hint">Сколько у тебя денег теперь?</div>
           <div class="chance-s2-costbadge"><span id="chanceStep2Cost">50к ₽</span></div>
-          <div class="input-wrap" style="width:100%;padding:0 24px;box-sizing:border-box;margin-top:12px">
-            <input id="chanceBalanceInput" class="capital-input chance-s2-input" type="number" placeholder="0" min="0" style="padding-right:44px" />
-            <span class="ruble-sign chance-s2-ruble">₽</span>
+          <div style="position:relative;width:calc(100% - 48px);margin:12px auto 0">
+            <input id="chanceBalanceInput" class="capital-input chance-s2-input" type="number" placeholder="0" min="0" style="width:100%;padding-right:44px;box-sizing:border-box" />
+            <span style="position:absolute;right:16px;top:50%;transform:translateY(-50%);font-family:'Montserrat',sans-serif;font-size:22px;font-weight:900;color:var(--gold);pointer-events:none;z-index:2">₽</span>
           </div>
           <div style="padding:0 24px;width:100%;box-sizing:border-box;margin-top:14px">
             <button class="chance-s2-btn" onclick="submitChanceBuy()">✔ ПОДТВЕРДИТЬ</button>
